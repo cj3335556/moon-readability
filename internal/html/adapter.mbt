@@ -41,6 +41,15 @@ pub fn Document::body_text(self : Document) -> String {
 }
 
 ///|
+/// Returns the document body as a node.
+pub fn Document::body(self : Document) -> Node? {
+  match @html_parser.query_one(self.root, "body") {
+    Some(node) => Some(wrap(node))
+    None => None
+  }
+}
+
+///|
 /// Returns the document body as serialized HTML.
 pub fn Document::body_html(self : Document) -> String {
   match @html_parser.query_one(self.root, "body") {
@@ -94,10 +103,128 @@ pub fn Node::to_html(self : Node) -> String {
 }
 
 ///|
+/// Removes this node from its parent.
+pub fn Node::remove(self : Node) -> Unit {
+  match self.inner.parent() {
+    Some(parent) => parent.remove_child(self.inner)
+    None => ()
+  }
+}
+
+///|
+/// Sets an attribute value on this node.
+pub fn Node::set_attr(self : Node, name : String, value : String) -> Unit {
+  self.inner.attrs.set(name, Some(value))
+}
+
+///|
+/// Removes an attribute from this node.
+pub fn Node::remove_attr(self : Node, name : String) -> Unit {
+  self.inner.attrs.remove(name)
+}
+
+///|
+/// Returns the node's attribute names.
+pub fn Node::attr_names(self : Node) -> Array[String] {
+  let result : Array[String] = []
+  for name in self.inner.attrs.keys() {
+    result.push(name)
+  }
+  result
+}
+
+///|
+fn collect_elements(node : Node, result : Array[Node]) -> Unit {
+  result.push(node)
+  for child in node.children() {
+    if child.is_element() {
+      collect_elements(child, result)
+    }
+  }
+}
+
+///|
+fn is_url_attr(name : String) -> Bool {
+  for item in [
+    "href", "src", "action", "formaction", "poster", "background", "srcset",
+    "xlink:href",
+  ] {
+    if name == item {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn string_contains_any(text : String, needles : Array[String]) -> Bool {
+  for needle in needles {
+    match text.find(needle) {
+      Some(_) => return true
+      None => ()
+    }
+  }
+  false
+}
+
+///|
+fn is_unsafe_url(value : String) -> Bool {
+  let lowered = value.trim().to_lower().to_owned()
+  if lowered.has_prefix("javascript:") || lowered.has_prefix("vbscript:") {
+    true
+  } else if lowered.has_prefix("data:") {
+    !string_contains_any(
+      lowered,
+      ["image/png", "image/jpeg", "image/gif", "image/webp"],
+    )
+  } else {
+    string_contains_any(lowered, ["javascript:", "vbscript:"])
+  }
+}
+
+///|
+/// Removes boilerplate elements and unsafe attributes in place.
+pub fn Node::clean(self : Node) -> Node {
+  for selector in [
+    "script", "style", "noscript", "iframe", "form", "nav", "aside", "footer",
+  ] {
+    for child in self.query(selector) {
+      if !child.same(self) {
+        child.remove()
+      }
+    }
+  }
+  let elements : Array[Node] = []
+  collect_elements(self, elements)
+  for element in elements {
+    for name in element.attr_names() {
+      let lowered = name.to_lower()
+      if lowered.has_prefix("on") || lowered == "style" {
+        element.remove_attr(name)
+      } else if is_url_attr(lowered) {
+        match element.attr(name) {
+          Some(value) => if is_unsafe_url(value) {
+            element.remove_attr(name)
+          }
+          None => ()
+        }
+      }
+    }
+  }
+  self
+}
+
+///|
+/// Removes boilerplate elements, cleans attributes, and serializes the subtree.
+pub fn Node::cleaned_html(self : Node) -> String {
+  self.clean().to_html()
+}
+
+///|
 /// Returns an attribute value, preserving the distinction between a missing
 /// attribute and an empty one.
 pub fn Node::attr(self : Node, name : String) -> String? {
-  match self.inner.attrs().get(name) {
+  match self.inner.attrs.get(name) {
     Some(Some(value)) => Some(value)
     _ => None
   }
@@ -106,7 +233,7 @@ pub fn Node::attr(self : Node, name : String) -> String? {
 ///|
 /// Returns whether the element has the attribute.
 pub fn Node::has_attr(self : Node, name : String) -> Bool {
-  match self.inner.attrs().get(name) {
+  match self.inner.attrs.get(name) {
     Some(_) => true
     None => false
   }

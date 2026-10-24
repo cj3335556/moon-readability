@@ -103,21 +103,6 @@ fn domain_from_url(url : String?) -> String? {
 }
 
 ///|
-fn resolve_url(value : String, base_url : String?) -> String {
-  match value.find("://") {
-    Some(_) => value
-    None =>
-      match base_url {
-        Some(base) =>
-          base.trim_end(chars="/").to_owned() +
-          "/" +
-          value.trim_start(chars="/").to_owned()
-        None => value
-      }
-  }
-}
-
-///|
 fn canonical_url(doc : @html.Document, base_url : String?) -> String? {
   for link in doc.query("link") {
     match link.attr("rel") {
@@ -199,18 +184,25 @@ pub fn extract_article(
     _ => raise ParseFailed("failed to parse HTML")
   }
   let metadata = metadata_from_document(doc, opts.base_url)
-  let nodes = select_content_nodes(doc)
-  let (content_text, content_html) = if nodes.length() == 0 {
-    (doc.body_text(), doc.body_html())
+  let selected_nodes = select_content_nodes(doc)
+  let content_nodes = if selected_nodes.length() > 0 {
+    selected_nodes
   } else {
-    let text_parts : Array[String] = []
-    let html_parts : Array[String] = []
-    for node in nodes {
-      text_parts.push(node.text())
-      html_parts.push(node.to_html())
+    match doc.body() {
+      Some(node) => [node]
+      None => []
     }
-    (text_parts.join("\n"), html_parts.join(""))
   }
+  resolve_content_urls(content_nodes, opts.base_url)
+  let text_parts : Array[String] = []
+  let html_parts : Array[String] = []
+  for node in content_nodes {
+    let cleaned = node.clean()
+    html_parts.push(cleaned.to_html())
+    text_parts.push(cleaned.text())
+  }
+  let content_text = text_parts.join("\n")
+  let content_html = html_parts.join("")
   let title = match metadata.title {
     Some(value) => value
     None => doc.title()

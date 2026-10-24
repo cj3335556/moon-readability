@@ -10,28 +10,78 @@ scripts, and other boilerplate are removed.
 ## Features
 
 - Metadata extraction from Open Graph, Twitter cards, standard meta tags,
-  `<title>`, `<h1>`, and the document language.
+  `<title>`, `<h1>`, JSON-LD, and the document language.
 - Content-node scoring using text length, link density, tag names, and
   class/id hints.
 - Sibling merging so articles split across several blocks stay together.
 - Cleaning of scripts, styles, frames, forms, navigation, sidebars, and
   footers.
 - Removal of event-handler attributes, inline styles, and unsafe URL schemes.
-- Relative link and image resolution against a base URL, including `srcset`.
-- Plain text with block separators, sentence-aware excerpts, and Markdown
-  rendering.
+- Relative link and image resolution against a base URL, including dot
+  segments, query strings, fragments, and `srcset`.
+- Plain text with block separators, Unicode character counts, sentence-aware
+  excerpts, and Markdown rendering.
 - A JSON representation and a small file-based CLI.
 - Runs on WebAssembly and JavaScript targets. Native builds require a local C
   toolchain such as MSVC Build Tools on Windows.
 
-## Non-goals
+## Scope and boundaries
 
-- Executing JavaScript or rendering a browser page.
-- Fetching URLs or handling authenticated sessions.
+### Input and output
+
+- Input is an HTML `String`. Byte input, charset detection, streaming, and hard
+  size limits are not provided.
+- Output is heuristic: it aims for the main article but does not guarantee a
+  perfect result for every page.
+- `content_html` is cleaned of common unsafe constructs; it is not a
+  general-purpose HTML sanitizer. Do not render untrusted output without an
+  additional sanitizer.
+- `length` counts Unicode characters. `excerpt` is truncated at a character
+  boundary and prefers a sentence end.
+
+### Supported
+
+- Local HTML documents supplied as a string or through the file-based CLI.
+- Article metadata from Open Graph, Twitter cards, standard meta tags,
+  `<title>`, `<h1>`, JSON-LD, and the document language.
+- Content scoring, main-node selection, sibling merging, boilerplate removal,
+  URL resolution, and Markdown/JSON output.
+- WebAssembly and JavaScript targets. Native builds require a local C toolchain
+  such as MSVC Build Tools on Windows.
+
+### Not supported
+
+- Executing JavaScript, rendering a browser page, or reading a DOM built by a
+  frontend framework.
+- Fetching URLs, handling authentication, paywalls, cookies, or sessions.
+- iframes, shadow DOM, canvas-rendered text, or content hidden by CSS.
+- PDF, DOCX, XLSX, EPUB, or other non-HTML formats.
+- stdin, recursive directory scanning, or batch processing in the CLI.
 - Full API or output compatibility with Mozilla Readability.
-- Acting as a general-purpose HTML sanitizer. `content_html` is filtered for
-  common unsafe constructs, but untrusted output should still be handled with
-  care.
+- A complete RFC 3986 URL implementation. Dot segments, root-relative links,
+  query strings, fragments, and `srcset` are handled; IDN and unusual URL
+  forms may not be.
+
+### Metadata coverage
+
+- Open Graph and Twitter card tags.
+- Standard `meta` tags (`author`, `date`, `content-language`).
+- `<title>`, `<h1>`, `<html lang>`, and `link[rel=canonical]`.
+- JSON-LD `headline`, `author`, `datePublished`, `publisher`, and
+  `inLanguage`.
+- Not covered: microdata, RDFa, and site-specific metadata conventions.
+
+### Performance and limits
+
+- No hard input-size limit; memory use grows with the document.
+- Extraction is deterministic and does not use network access or randomness.
+- The test suite includes a 300-paragraph performance guard, not a formal
+  benchmark.
+
+### API stability
+
+- Version 0.1.x: public APIs may change in minor releases until 1.0.
+- Releases follow semantic versioning.
 
 ## Install
 
@@ -96,7 +146,7 @@ moon run cmd/main -- testdata/open_graph.html --json \
 ```
 
 The CLI reads a local HTML file. Use `--help` for usage and `--version` for the
-current version.
+current version. Errors are written to stderr.
 
 ## Example
 
@@ -116,7 +166,7 @@ It extracts an inline HTML document and prints the title, text, and Markdown.
 ├── metadata.mbt         metadata extraction and article assembly
 ├── score.mbt            content scoring, selection, sibling merging
 ├── url.mbt              relative URL resolution
-├── text.mbt             text normalization and excerpts
+├── text.mbt             text normalization, character counts, excerpts
 ├── markdown.mbt         Markdown rendering
 ├── json.mbt             JSON output
 ├── cli.mbt              testable CLI core
@@ -138,9 +188,9 @@ moon test
 moon fmt --check
 ```
 
-The test suite covers metadata, scoring, selection, sibling merging, cleaning,
-URL resolution, text and excerpts, Markdown, JSON, the CLI core, local HTML
-fixtures, malformed markup, and long documents.
+The test suite covers metadata, JSON-LD, scoring, selection, sibling merging,
+cleaning, URL resolution, text and excerpts, Markdown, JSON, the CLI core, local
+HTML fixtures, malformed markup, and long documents.
 
 ## License
 

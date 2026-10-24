@@ -16,6 +16,12 @@ fn wrap(node : @html_parser.Node) -> Node {
 }
 
 ///|
+/// Formats a parser error for the public extraction error type.
+pub fn format_error(error : @html_parser.HtmlError) -> String {
+  @debug.to_string(error)
+}
+
+///|
 /// Parses an HTML string into an internal document.
 pub fn parse(html : String) -> Document raise @html_parser.HtmlError {
   let parsed = @html_parser.parse(html)

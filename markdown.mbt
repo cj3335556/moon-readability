@@ -5,7 +5,10 @@ pub fn article_to_markdown(article : Article) -> String raise ExtractionError {
     return article.content_text
   }
   let doc = @html.parse(article.content_html) catch {
-    _ => raise ParseFailed("failed to parse article HTML")
+    error =>
+      raise ParseFailed(
+        "failed to parse article HTML: " + @html.format_error(error),
+      )
   }
   match doc.body() {
     Some(node) => node.to_markdown()

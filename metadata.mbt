@@ -246,7 +246,8 @@ pub fn extract_metadata(
   base_url? : String,
 ) -> Metadata raise ExtractionError {
   let doc = @html.parse(html) catch {
-    _ => raise ParseFailed("failed to parse HTML")
+    error =>
+      raise ParseFailed("failed to parse HTML: " + @html.format_error(error))
   }
   metadata_from_document(doc, base_url)
 }
@@ -265,7 +266,8 @@ pub fn extract_article(
     None => ExtractionOptions::new()
   }
   let doc = @html.parse(html) catch {
-    _ => raise ParseFailed("failed to parse HTML")
+    error =>
+      raise ParseFailed("failed to parse HTML: " + @html.format_error(error))
   }
   let metadata = metadata_from_document(doc, opts.base_url)
   let selected_nodes = select_content_nodes(doc)

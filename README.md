@@ -21,7 +21,8 @@ scripts, and other boilerplate are removed.
 - Plain text with block separators, sentence-aware excerpts, and Markdown
   rendering.
 - A JSON representation and a small file-based CLI.
-- Runs on native, JavaScript, and WebAssembly targets.
+- Runs on WebAssembly and JavaScript targets. Native builds require a local C
+  toolchain such as MSVC Build Tools on Windows.
 
 ## Non-goals
 

@@ -16,6 +16,8 @@ jobs:
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Show versions
         run: moon version
+      - name: Update registry
+        run: moon update
       - name: Check formatting
         run: moon fmt --check
       - name: Check

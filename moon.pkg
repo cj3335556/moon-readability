@@ -1,5 +1,6 @@
 import {
   "cj3335556/moon-readability/internal/html",
+  "moonbitlang/core/json",
 }
 
 import {

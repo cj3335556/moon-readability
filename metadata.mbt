@@ -121,28 +121,112 @@ fn canonical_url(doc : @html.Document, base_url : String?) -> String? {
 }
 
 ///|
+fn parse_json(text : String) -> Json? {
+  Some(@json.parse(text)) catch {
+    _ => None
+  }
+}
+
+///|
+fn json_to_string(value : Json) -> String? {
+  match value {
+    String(text) => Some(text)
+    Object(object) =>
+      match object.get("name") {
+        Some(name) => json_to_string(name)
+        None => None
+      }
+    Array(items) => {
+      for item in items {
+        match json_to_string(item) {
+          Some(text) => return Some(text)
+          None => ()
+        }
+      }
+      None
+    }
+    _ => None
+  }
+}
+
+///|
+fn json_lookup(value : Json, key : String) -> Json? {
+  match value {
+    Object(object) =>
+      match object.get(key) {
+        Some(found) => Some(found)
+        None =>
+          match object.get("@graph") {
+            Some(graph) => json_lookup(graph, key)
+            None => None
+          }
+      }
+    Array(items) => {
+      for item in items {
+        match json_lookup(item, key) {
+          Some(found) => return Some(found)
+          None => ()
+        }
+      }
+      None
+    }
+    _ => None
+  }
+}
+
+///|
+fn json_ld_string(doc : @html.Document, key : String) -> String? {
+  for script in doc.query("script") {
+    match script.attr("type") {
+      Some(kind) =>
+        if kind == "application/ld+json" {
+          match parse_json(script.text()) {
+            Some(json) =>
+              match json_lookup(json, key) {
+                Some(value) =>
+                  match json_to_string(value) {
+                    Some(text) => if text != "" { return Some(text) }
+                    None => ()
+                  }
+                None => ()
+              }
+            None => ()
+          }
+        }
+      None => ()
+    }
+  }
+  None
+}
+
+///|
 fn metadata_from_document(doc : @html.Document, base_url : String?) -> Metadata {
   let title = first_non_empty([
     meta_by_property(doc, "og:title"),
     meta_by_name(doc, "twitter:title"),
     option_text(doc.query_one("title")),
     option_text(doc.query_one("h1")),
+    json_ld_string(doc, "headline"),
   ])
   let byline = first_non_empty([
     meta_by_name(doc, "author"),
     meta_by_property(doc, "article:author"),
+    json_ld_string(doc, "author"),
   ])
   let site_name = first_non_empty([
     meta_by_property(doc, "og:site_name"),
+    json_ld_string(doc, "publisher"),
     domain_from_url(base_url),
   ])
   let published_time = first_non_empty([
     meta_by_property(doc, "article:published_time"),
     meta_by_name(doc, "date"),
+    json_ld_string(doc, "datePublished"),
   ])
   let language = first_non_empty([
     option_attr(doc.query_one("html"), "lang"),
     meta_by_name(doc, "content-language"),
+    json_ld_string(doc, "inLanguage"),
   ])
   let canonical = canonical_url(doc, base_url)
   {

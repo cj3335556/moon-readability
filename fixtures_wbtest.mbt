@@ -66,3 +66,14 @@ test "extracts link heavy fixture" {
   assert_true(contains(article.content_text, "actual article text"))
   assert_true(!contains(article.content_text, "Epsilon"))
 }
+
+///|
+test "extracts json-ld fixture" {
+  let article = extract_fixture("json_ld.html")
+  assert_eq(article.title, "JSON-LD article")
+  assert_eq(article.byline, Some("JSON Author"))
+  assert_eq(article.published_time, Some("2026-10-25"))
+  assert_eq(article.site_name, Some("JSON Site"))
+  assert_eq(article.language, Some("en"))
+  assert_true(contains(article.content_text, "JSON-LD body text"))
+}

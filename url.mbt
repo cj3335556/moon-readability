@@ -25,6 +25,61 @@ fn has_scheme(value : String) -> Bool {
 }
 
 ///|
+fn split_suffix(value : String) -> (String, String) {
+  let mut end = value.length()
+  let mut index = 0
+  for ch in value {
+    if ch == '?' || ch == '#' {
+      end = index
+      break
+    }
+    index += 1
+  }
+  (value[:end].to_owned(), value.view(start_offset=end).to_owned())
+}
+
+///|
+fn normalize_path(path : String) -> String {
+  let absolute = path.has_prefix("/")
+  let trailing = path.has_suffix("/")
+  let segments : Array[String] = []
+  for part in path.split("/") {
+    let segment = part.to_owned()
+    if segment == "" || segment == "." {
+      // Skip empty and current-directory segments.
+    } else if segment == ".." {
+      if segments.length() > 0 {
+        ignore(segments.pop())
+      }
+    } else {
+      segments.push(segment)
+    }
+  }
+  let joined = segments.join("/")
+  let base = if absolute { "/" + joined } else { joined }
+  if trailing && base != "" && base != "/" {
+    base + "/"
+  } else {
+    base
+  }
+}
+
+///|
+fn normalize_url(url : String) -> String {
+  match url.split_once("://") {
+    Some((scheme, rest)) =>
+      match rest.split_once("/") {
+        Some((host, path)) => {
+          let normalized = normalize_path("/" + path.to_owned())
+          scheme.to_owned() + "://" + host.to_owned() + normalized
+        }
+        None => url
+      }
+    None => url
+  }
+}
+
+///|
 fn resolve_url(value : String, base_url : String?) -> String {
   if value == "" {
     return value
@@ -32,31 +87,34 @@ fn resolve_url(value : String, base_url : String?) -> String {
   if contains(value, "://") || has_scheme(value) {
     return value
   }
-  if value.has_prefix("//") {
+  let (value_path, value_suffix) = split_suffix(value)
+  if value_path == "" {
+    return match base_url {
+      Some(base) => base + value_suffix
+      None => value
+    }
+  }
+  if value_path.has_prefix("//") {
     return match base_url {
       Some(base) =>
         match base.split_once("://") {
-          Some((scheme, _)) => scheme.to_owned() + ":" + value
+          Some((scheme, _)) =>
+            scheme.to_owned() + ":" + value_path + value_suffix
           None => value
         }
       None => value
     }
   }
-  if value.has_prefix("#") {
-    return match base_url {
-      Some(base) => base + value
-      None => value
-    }
-  }
   match base_url {
-    Some(base) =>
-      match base.split_once("://") {
+    Some(base) => {
+      let (base_path, _) = split_suffix(base)
+      match base_path.split_once("://") {
         Some((scheme, rest)) =>
           match rest.split_once("/") {
             Some((host, path)) => {
               let origin = scheme.to_owned() + "://" + host.to_owned()
-              if value.has_prefix("/") {
-                origin + value
+              let resolved = if value_path.has_prefix("/") {
+                origin + value_path
               } else {
                 let directory = if path == "" {
                   origin + "/"
@@ -68,16 +126,21 @@ fn resolve_url(value : String, base_url : String?) -> String {
                     origin + "/"
                   }
                 }
-                directory + value
+                directory + value_path
               }
+              normalize_url(resolved) + value_suffix
             }
             None => {
               let origin = scheme.to_owned() + "://" + rest.to_owned()
-              origin + "/" + value.trim_start(chars="/").to_owned()
+              normalize_url(
+                origin + "/" + value_path.trim_start(chars="/").to_owned(),
+              ) +
+              value_suffix
             }
           }
         None => value
       }
+    }
     None => value
   }
 }

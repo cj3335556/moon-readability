@@ -199,8 +199,11 @@ pub fn extract_article(
     _ => raise ParseFailed("failed to parse HTML")
   }
   let metadata = metadata_from_document(doc, opts.base_url)
-  let content_text = doc.body_text()
-  let content_html = doc.body_html()
+  let selected = select_main_node(doc)
+  let (content_text, content_html) = match selected {
+    Some(node) => (node.text(), node.to_html())
+    None => (doc.body_text(), doc.body_html())
+  }
   let title = match metadata.title {
     Some(value) => value
     None => doc.title()

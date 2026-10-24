@@ -10,14 +10,13 @@ fn contains(text : String, needle : String) -> Bool {
 fn meta_by_name(doc : @html.Document, name : String) -> String? {
   for meta in doc.query("meta") {
     match meta.attr("name") {
-      Some(value) => {
+      Some(value) =>
         if value == name {
           match meta.attr("content") {
             Some(content) => if content != "" { return Some(content) }
             None => ()
           }
         }
-      }
       None => ()
     }
   }
@@ -28,14 +27,13 @@ fn meta_by_name(doc : @html.Document, name : String) -> String? {
 fn meta_by_property(doc : @html.Document, property : String) -> String? {
   for meta in doc.query("meta") {
     match meta.attr("property") {
-      Some(value) => {
+      Some(value) =>
         if value == property {
           match meta.attr("content") {
             Some(content) => if content != "" { return Some(content) }
             None => ()
           }
         }
-      }
       None => ()
     }
   }
@@ -106,14 +104,16 @@ fn domain_from_url(url : String?) -> String? {
 fn canonical_url(doc : @html.Document, base_url : String?) -> String? {
   for link in doc.query("link") {
     match link.attr("rel") {
-      Some(rel) => {
+      Some(rel) =>
         if rel == "canonical" || contains(rel, "canonical") {
           match link.attr("href") {
-            Some(href) => if href != "" { return Some(resolve_url(href, base_url)) }
+            Some(href) =>
+              if href != "" {
+                return Some(resolve_url(href, base_url))
+              }
             None => ()
           }
         }
-      }
       None => ()
     }
   }

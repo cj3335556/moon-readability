@@ -1,5 +1,5 @@
 ///|
-fn last_slash(text : StringView) -> Int {
+fn last_slash(text : StringView) -> Int32 {
   let mut index = -1
   let mut position = 0
   for ch in text {
@@ -14,13 +14,12 @@ fn last_slash(text : StringView) -> Int {
 ///|
 fn has_scheme(value : String) -> Bool {
   match value.split_once(":") {
-    Some((scheme, _)) => {
+    Some((scheme, _)) =>
       if scheme == "" {
         false
       } else {
         !contains(scheme.to_owned(), "/")
       }
-    }
     None => false
   }
 }
@@ -115,10 +114,7 @@ fn resolve_attr(node : @html.Node, name : String, base_url : String?) -> Unit {
 }
 
 ///|
-fn resolve_content_urls(
-  nodes : Array[@html.Node],
-  base_url : String?,
-) -> Unit {
+fn resolve_content_urls(nodes : Array[@html.Node], base_url : String?) -> Unit {
   for node in nodes {
     for link in node.query("a") {
       resolve_attr(link, "href", base_url)
@@ -133,7 +129,8 @@ fn resolve_content_urls(
     for source in node.query("source") {
       resolve_attr(source, "src", base_url)
       match source.attr("srcset") {
-        Some(value) => source.set_attr("srcset", resolve_srcset(value, base_url))
+        Some(value) =>
+          source.set_attr("srcset", resolve_srcset(value, base_url))
         None => ()
       }
     }

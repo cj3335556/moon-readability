@@ -1,6 +1,11 @@
 ///|
 fn is_sentence_end_char(ch : Char) -> Bool {
-  ch == '.' || ch == '!' || ch == '?' || ch == '。' || ch == '！' || ch == '？'
+  ch == '.' ||
+  ch == '!' ||
+  ch == '?' ||
+  ch == '。' ||
+  ch == '！' ||
+  ch == '？'
 }
 
 ///|
@@ -16,7 +21,7 @@ fn normalize_text(text : String) -> String {
 }
 
 ///|
-fn make_excerpt(text : String, limit : Int) -> String {
+fn make_excerpt(text : String, limit : Int32) -> String {
   if limit <= 0 {
     return ""
   }

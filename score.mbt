@@ -1,11 +1,11 @@
 ///|
 /// The components of a candidate's content score.
 priv struct NodeScore {
-  total : Int
-  text_score : Int
-  link_penalty : Int
-  tag_score : Int
-  class_score : Int
+  total : Int32
+  text_score : Int32
+  link_penalty : Int32
+  tag_score : Int32
+  class_score : Int32
 }
 
 ///|
@@ -16,7 +16,7 @@ priv struct ScoredNode {
 }
 
 ///|
-fn tag_weight(name : String) -> Int {
+fn tag_weight(name : String) -> Int32 {
   let lowered = name.to_lower()
   if lowered == "article" || lowered == "main" {
     50
@@ -48,7 +48,7 @@ fn contains_any(text : String, needles : Array[String]) -> Bool {
 }
 
 ///|
-fn class_weight(node : @html.Node) -> Int {
+fn class_weight(node : @html.Node) -> Int32 {
   let mut score = 0
   let positive = ["article", "content", "post", "entry", "main", "body"]
   let negative = [
@@ -113,7 +113,7 @@ fn candidate_nodes(doc : @html.Document) -> Array[@html.Node] {
 fn score_document(doc : @html.Document) -> Array[ScoredNode] {
   let result : Array[ScoredNode] = []
   for node in candidate_nodes(doc) {
-    result.push({ node, score: score_node(node) })
+    result.push({ node, score: score_node(node), })
   }
   result
 }
@@ -139,9 +139,10 @@ fn select_main_node(doc : @html.Document) -> @html.Node? {
   let mut best : ScoredNode? = None
   for candidate in scored {
     match best {
-      Some(current) => if is_better(candidate, current) {
-        best = Some(candidate)
-      }
+      Some(current) =>
+        if is_better(candidate, current) {
+          best = Some(candidate)
+        }
       None => best = Some(candidate)
     }
   }
@@ -158,7 +159,9 @@ fn negative_tag(name : String) -> Bool {
 
 ///|
 fn negative_class(node : @html.Node) -> Bool {
-  let negative = ["nav", "footer", "sidebar", "comment", "share", "ad", "menu", "promo"]
+  let negative = [
+    "nav", "footer", "sidebar", "comment", "share", "ad", "menu", "promo",
+  ]
   for token in node.class_tokens() {
     if contains_any(token.to_lower(), negative) {
       return true

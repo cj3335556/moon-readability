@@ -1,19 +1,17 @@
 ///|
 test "cli outputs json by default" {
-  let result = run_cli_args(
-    ["page.html"],
-    fn(_path) { Some("<article><p>Hello.</p></article>") },
-  )
+  let result = run_cli_args(["page.html"], fn(_path) {
+    Some("<article><p>Hello.</p></article>")
+  })
   assert_eq(result.exit_code, 0)
   assert_true(contains(result.stdout, "\"content_text\""))
 }
 
 ///|
 test "cli outputs markdown" {
-  let result = run_cli_args(
-    ["page.html", "--markdown"],
-    fn(_path) { Some("<article><h1>Title</h1><p>Text</p></article>") },
-  )
+  let result = run_cli_args(["page.html", "--markdown"], fn(_path) {
+    Some("<article><h1>Title</h1><p>Text</p></article>")
+  })
   assert_eq(result.exit_code, 0)
   assert_true(contains(result.stdout, "Text"))
 }

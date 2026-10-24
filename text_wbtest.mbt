@@ -1,8 +1,6 @@
 ///|
 test "preserves paragraph breaks" {
-  let article = extract_article(
-    "<article><p>One.</p><p>Two.</p></article>",
-  ) catch {
+  let article = extract_article("<article><p>One.</p><p>Two.</p></article>") catch {
     _ => abort("unexpected extraction error")
   }
   assert_true(contains(article.content_text, "One."))

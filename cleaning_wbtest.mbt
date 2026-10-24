@@ -16,12 +16,16 @@ test "removes scripts unsafe attributes and javascript urls" {
 test "resolves relative urls against base" {
   let article = extract_article(
     "<article><p>Text</p><a href=\"/post/1\">Link</a><img src=\"img.png\"></article>",
-    options=ExtractionOptions::new(base_url="https://example.com/blog/page.html"),
+    options=ExtractionOptions::new(
+      base_url="https://example.com/blog/page.html",
+    ),
   ) catch {
     _ => abort("unexpected extraction error")
   }
   assert_true(contains(article.content_html, "https://example.com/post/1"))
-  assert_true(contains(article.content_html, "https://example.com/blog/img.png"))
+  assert_true(
+    contains(article.content_html, "https://example.com/blog/img.png"),
+  )
 }
 
 ///|

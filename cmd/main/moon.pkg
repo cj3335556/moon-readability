@@ -1,8 +1,8 @@
 import {
   "CJ3335556/moon-readability" @readability,
-  "moonbitlang/core/env" @env,
-  "moonbitlang/x/fs" @fs,
-  "moonbitlang/x/sys" @sys,
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+  "moonbitlang/x/sys",
 }
 
 pkgtype(kind: "executable")

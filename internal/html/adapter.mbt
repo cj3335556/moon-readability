@@ -12,14 +12,14 @@ pub struct Node {
 
 ///|
 fn wrap(node : @html_parser.Node) -> Node {
-  { inner: node }
+  { inner: node, }
 }
 
 ///|
 /// Parses an HTML string into an internal document.
 pub fn parse(html : String) -> Document raise @html_parser.HtmlError {
   let parsed = @html_parser.parse(html)
-  { root: parsed.root }
+  { root: parsed.root, }
 }
 
 ///|
@@ -53,10 +53,7 @@ pub fn Document::body(self : Document) -> Node? {
 /// Returns the document body as serialized HTML.
 pub fn Document::body_html(self : Document) -> String {
   match @html_parser.query_one(self.root, "body") {
-    Some(node) =>
-      @html_parser.to_html(node) catch {
-        _ => node.text()
-      }
+    Some(node) => @html_parser.to_html(node) catch { _ => node.text() }
     None => ""
   }
 }
@@ -164,10 +161,10 @@ fn collect_elements(node : Node, result : Array[Node]) -> Unit {
 
 ///|
 fn is_url_attr(name : String) -> Bool {
-  for item in [
-    "href", "src", "action", "formaction", "poster", "background", "srcset",
-    "xlink:href",
-  ] {
+  for
+    item in [
+      "href", "src", "action", "formaction", "poster", "background", "srcset", "xlink:href",
+    ] {
     if name == item {
       return true
     }
@@ -192,10 +189,9 @@ fn is_unsafe_url(value : String) -> Bool {
   if lowered.has_prefix("javascript:") || lowered.has_prefix("vbscript:") {
     true
   } else if lowered.has_prefix("data:") {
-    !string_contains_any(
-      lowered,
-      ["image/png", "image/jpeg", "image/gif", "image/webp"],
-    )
+    !string_contains_any(lowered, [
+      "image/png", "image/jpeg", "image/gif", "image/webp",
+    ])
   } else {
     string_contains_any(lowered, ["javascript:", "vbscript:"])
   }
@@ -204,9 +200,10 @@ fn is_unsafe_url(value : String) -> Bool {
 ///|
 /// Removes boilerplate elements and unsafe attributes in place.
 pub fn Node::clean(self : Node) -> Node {
-  for selector in [
-    "script", "style", "noscript", "iframe", "form", "nav", "aside", "footer",
-  ] {
+  for
+    selector in [
+      "script", "style", "noscript", "iframe", "form", "nav", "aside", "footer",
+    ] {
     for child in self.query(selector) {
       if !child.same(self) {
         child.remove()
@@ -222,9 +219,7 @@ pub fn Node::clean(self : Node) -> Node {
         element.remove_attr(name)
       } else if is_url_attr(lowered) {
         match element.attr(name) {
-          Some(value) => if is_unsafe_url(value) {
-            element.remove_attr(name)
-          }
+          Some(value) => if is_unsafe_url(value) { element.remove_attr(name) }
           None => ()
         }
       }
@@ -284,13 +279,12 @@ pub fn Node::query(self : Node, selector : String) -> Array[Node] {
 pub fn Node::class_tokens(self : Node) -> Array[String] {
   let result : Array[String] = []
   match self.attr("class") {
-    Some(value) => {
+    Some(value) =>
       for token in value.split(" ") {
         if token != "" {
           result.push(token.to_owned())
         }
       }
-    }
     None => ()
   }
   result
@@ -319,13 +313,13 @@ pub fn Node::same(self : Node, other : Node) -> Bool {
 
 ///|
 /// Returns the character length of the node's text.
-pub fn Node::text_length(self : Node) -> Int {
+pub fn Node::text_length(self : Node) -> Int32 {
   self.text().length()
 }
 
 ///|
 /// Returns the total character length of descendant link text.
-pub fn Node::link_text_length(self : Node) -> Int {
+pub fn Node::link_text_length(self : Node) -> Int32 {
   let mut total = 0
   for link in @html_parser.query(self.inner, "a") {
     total += link.text().length()
@@ -346,12 +340,17 @@ pub fn Node::link_density(self : Node) -> Double {
 
 ///|
 fn is_sentence_end(ch : Char) -> Bool {
-  ch == '.' || ch == '!' || ch == '?' || ch == '。' || ch == '！' || ch == '？'
+  ch == '.' ||
+  ch == '!' ||
+  ch == '?' ||
+  ch == '。' ||
+  ch == '！' ||
+  ch == '？'
 }
 
 ///|
 /// Counts sentence-ending punctuation in the node's text.
-pub fn Node::punctuation_count(self : Node) -> Int {
+pub fn Node::punctuation_count(self : Node) -> Int32 {
   let text = self.text()
   let mut count = 0
   for ch in text {

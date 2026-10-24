@@ -19,7 +19,7 @@ pub struct CliOptions {
 pub struct CliResult {
   stdout : String
   stderr : String
-  exit_code : Int
+  exit_code : Int32
 }
 
 ///|
@@ -66,7 +66,7 @@ pub fn parse_cli_args(args : Array[String]) -> CliOptions raise ExtractionError 
   if path == "" {
     raise Usage("missing input path")
   }
-  { path, format, base_url }
+  { path, format, base_url, }
 }
 
 ///|
@@ -96,7 +96,8 @@ fn extract_with_base(
   base_url : String?,
 ) -> Article raise ExtractionError {
   match base_url {
-    Some(base) => extract_article(html, options=ExtractionOptions::new(base_url=base))
+    Some(base) =>
+      extract_article(html, options=ExtractionOptions::new(base_url=base))
     None => extract_article(html)
   }
 }
@@ -108,10 +109,10 @@ pub fn run_cli_args(
   read_file : (String) -> String?,
 ) -> CliResult {
   if args.length() > 0 && (args[0] == "--help" || args[0] == "-h") {
-    return { stdout: cli_help(), stderr: "", exit_code: 0 }
+    return { stdout: cli_help(), stderr: "", exit_code: 0, }
   }
   if args.length() > 0 && args[0] == "--version" {
-    return { stdout: version() + "\n", stderr: "", exit_code: 0 }
+    return { stdout: version() + "\n", stderr: "", exit_code: 0, }
   }
   let options = parse_cli_args(args) catch {
     error =>
@@ -153,5 +154,5 @@ pub fn run_cli_args(
         exit_code: 1,
       }
   }
-  { stdout: output + "\n", stderr: "", exit_code: 0 }
+  { stdout: output + "\n", stderr: "", exit_code: 0, }
 }

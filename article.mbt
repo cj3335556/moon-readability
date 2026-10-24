@@ -10,7 +10,7 @@ pub struct Article {
   content_html : String
   content_text : String
   excerpt : String
-  length : Int
+  length : Int32
 }
 
 ///|
@@ -25,7 +25,7 @@ pub fn Article::from_parts(
   content_html : String,
   content_text : String,
   excerpt : String,
-  length : Int,
+  length : Int32,
 ) -> Article {
   {
     title,
@@ -56,16 +56,16 @@ pub struct Metadata {
 /// Options that control extraction.
 pub struct ExtractionOptions {
   base_url : String?
-  max_excerpt_chars : Int
+  max_excerpt_chars : Int32
 }
 
 ///|
 /// Creates extraction options with a 200-character excerpt by default.
 pub fn ExtractionOptions::new(
   base_url? : String,
-  max_excerpt_chars? : Int = 200,
+  max_excerpt_chars~ : Int32 = 200,
 ) -> ExtractionOptions {
-  { base_url, max_excerpt_chars }
+  { base_url, max_excerpt_chars, }
 }
 
 ///|

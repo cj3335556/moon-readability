@@ -1,0 +1,14 @@
+moon-readability
+Copyright 2026 CJ3335556
+
+This project is licensed under the Apache License, Version 2.0.
+
+The content extraction heuristics are inspired by Mozilla Readability
+(https://github.com/mozilla/readability), licensed under the Apache License,
+Version 2.0. No source code from Mozilla Readability is copied.
+
+HTML parsing is provided by bobzhang/html_parser
+(https://github.com/bobzhang/html_parser), licensed under the Apache License,
+Version 2.0.
+
+The HTML fixtures in testdata/ were written for this project.

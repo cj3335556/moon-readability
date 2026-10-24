@@ -11,7 +11,7 @@ fn main {
     println(result.stdout.trim_end(chars="\n").to_owned())
   }
   if result.stderr != "" {
-    println(result.stderr.trim_end(chars="\n").to_owned())
+    eprintln(result.stderr.trim_end(chars="\n").to_owned())
   }
   if result.exit_code != 0 {
     @sys.exit(1)

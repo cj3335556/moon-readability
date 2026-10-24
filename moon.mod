@@ -9,4 +9,5 @@ description = "Pure-MoonBit article content extraction library: turn HTML pages 
 
 import {
   "bobzhang/html_parser@0.2.0",
+  "moonbitlang/x@0.5.6",
 }

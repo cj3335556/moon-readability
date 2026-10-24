@@ -72,4 +72,5 @@ pub fn ExtractionOptions::new(
 /// Errors raised while parsing or extracting a document.
 pub(all) suberror ExtractionError {
   ParseFailed(String)
+  Usage(String)
 }

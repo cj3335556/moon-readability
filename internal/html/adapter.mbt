@@ -166,6 +166,12 @@ pub fn Node::is_element(self : Node) -> Bool {
 }
 
 ///|
+/// Returns whether both wrappers point at the same DOM node.
+pub fn Node::same(self : Node, other : Node) -> Bool {
+  physical_equal(self.inner, other.inner)
+}
+
+///|
 /// Returns the character length of the node's text.
 pub fn Node::text_length(self : Node) -> Int {
   self.text().length()

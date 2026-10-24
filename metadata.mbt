@@ -199,10 +199,17 @@ pub fn extract_article(
     _ => raise ParseFailed("failed to parse HTML")
   }
   let metadata = metadata_from_document(doc, opts.base_url)
-  let selected = select_main_node(doc)
-  let (content_text, content_html) = match selected {
-    Some(node) => (node.text(), node.to_html())
-    None => (doc.body_text(), doc.body_html())
+  let nodes = select_content_nodes(doc)
+  let (content_text, content_html) = if nodes.length() == 0 {
+    (doc.body_text(), doc.body_html())
+  } else {
+    let text_parts : Array[String] = []
+    let html_parts : Array[String] = []
+    for node in nodes {
+      text_parts.push(node.text())
+      html_parts.push(node.to_html())
+    }
+    (text_parts.join("\n"), html_parts.join(""))
   }
   let title = match metadata.title {
     Some(value) => value

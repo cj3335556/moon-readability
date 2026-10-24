@@ -76,3 +76,30 @@ test "selection returns none when no candidate exists" {
   let doc = parse_document("<html><body></body></html>")
   assert_true(select_main_node(doc) is None)
 }
+
+///|
+test "merges sibling content blocks" {
+  let doc = parse_document(
+    "<div class=\"post-content\"><p>First content block with enough text to pass the threshold. It has two sentences.</p></div><div class=\"post-content\"><p>Second content block with enough text to pass the threshold. It also has two sentences.</p></div><div class=\"sidebar\"><p>Sidebar text that should not be merged into the article body.</p></div>",
+  )
+  let nodes = select_content_nodes(doc)
+  assert_eq(nodes.length(), 2)
+  assert_true(contains(nodes[0].text(), "First content block"))
+  assert_true(contains(nodes[1].text(), "Second content block"))
+}
+
+///|
+test "excludes navigation and footer siblings" {
+  let doc = parse_document(
+    "<article><p>Article text with enough content to be selected. Another sentence.</p></article><nav><a href=\"/\">Home</a></nav><footer>Footer</footer>",
+  )
+  let nodes = select_content_nodes(doc)
+  assert_eq(nodes.length(), 1)
+  assert_eq(nodes[0].name(), "article")
+}
+
+///|
+test "content selection empty for template-only document" {
+  let doc = parse_document("<html><body></body></html>")
+  assert_eq(select_content_nodes(doc).length(), 0)
+}

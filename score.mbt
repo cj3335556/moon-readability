@@ -150,3 +150,76 @@ fn select_main_node(doc : @html.Document) -> @html.Node? {
     None => None
   }
 }
+
+///|
+fn negative_tag(name : String) -> Bool {
+  contains_any(name.to_lower(), ["nav", "aside", "footer", "header", "form"])
+}
+
+///|
+fn negative_class(node : @html.Node) -> Bool {
+  let negative = ["nav", "footer", "sidebar", "comment", "share", "ad", "menu", "promo"]
+  for token in node.class_tokens() {
+    if contains_any(token.to_lower(), negative) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn shares_class(a : @html.Node, b : @html.Node) -> Bool {
+  for left in a.class_tokens() {
+    for right in b.class_tokens() {
+      if left == right {
+        return true
+      }
+    }
+  }
+  false
+}
+
+///|
+fn should_merge(node : @html.Node, selected : @html.Node) -> Bool {
+  if node.same(selected) {
+    return true
+  }
+  if !node.is_element() {
+    return false
+  }
+  if negative_tag(node.name()) || negative_class(node) {
+    return false
+  }
+  if node.link_density() > 0.5 {
+    return false
+  }
+  if node.text_length() < 80 {
+    return false
+  }
+  shares_class(node, selected) ||
+  node.text_length() >= 200 ||
+  node.name() == selected.name()
+}
+
+///|
+fn select_content_nodes(doc : @html.Document) -> Array[@html.Node] {
+  match select_main_node(doc) {
+    Some(selected) => {
+      let siblings = selected.siblings()
+      if siblings.length() == 0 {
+        return [selected]
+      }
+      let result : Array[@html.Node] = []
+      for sibling in siblings {
+        if should_merge(sibling, selected) {
+          result.push(sibling)
+        }
+      }
+      if result.length() == 0 {
+        result.push(selected)
+      }
+      result
+    }
+    None => []
+  }
+}

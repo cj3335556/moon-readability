@@ -35,14 +35,14 @@ scripts, and other boilerplate are removed.
 ## Install
 
 ```bash
-moon add CJ3335556/moon-readability
+moon add cj3335556/moon-readability
 ```
 
 Add the package to your `moon.pkg`:
 
 ```text
 import {
-  "CJ3335556/moon-readability" @readability,
+  "cj3335556/moon-readability" @readability,
 }
 ```
 

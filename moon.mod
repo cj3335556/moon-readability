@@ -1,10 +1,10 @@
-name = "CJ3335556/moon-readability"
+name = "cj3335556/moon-readability"
 
 version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/CJ3335556/moon-readability"
+repository = "https://github.com/cj3335556/moon-readability"
 
 license = "Apache-2.0"
 

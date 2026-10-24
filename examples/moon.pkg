@@ -1,5 +1,5 @@
 import {
-  "CJ3335556/moon-readability" @readability,
+  "cj3335556/moon-readability" @readability,
 }
 
 pkgtype(kind: "executable")

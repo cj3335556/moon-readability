@@ -1,3 +1,8 @@
 import {
   "CJ3335556/moon-readability/internal/html",
 }
+
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+} for "wbtest"

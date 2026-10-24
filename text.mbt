@@ -21,14 +21,37 @@ fn normalize_text(text : String) -> String {
 }
 
 ///|
+fn char_count(text : String) -> Int32 {
+  let mut count = 0
+  for _ in text {
+    count += 1
+  }
+  count
+}
+
+///|
+fn take_chars(text : String, limit : Int32) -> String {
+  let mut result = ""
+  let mut count = 0
+  for ch in text {
+    if count >= limit {
+      break
+    }
+    result = result + ch.to_string()
+    count += 1
+  }
+  result
+}
+
+///|
 fn make_excerpt(text : String, limit : Int32) -> String {
   if limit <= 0 {
     return ""
   }
-  if text.length() <= limit {
+  if char_count(text) <= limit {
     return text
   }
-  let prefix = text[:limit].to_owned()
+  let prefix = take_chars(text, limit)
   let mut cut = -1
   let mut index = 0
   for ch in prefix {
@@ -38,7 +61,7 @@ fn make_excerpt(text : String, limit : Int32) -> String {
     index += 1
   }
   if cut > 0 {
-    prefix[:cut].to_owned()
+    take_chars(prefix, cut)
   } else {
     prefix
   }

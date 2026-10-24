@@ -30,3 +30,14 @@ test "excerpt stops at sentence boundary" {
   }
   assert_eq(article.excerpt, "First sentence.")
 }
+
+///|
+test "excerpt does not split emoji" {
+  let article = extract_article(
+    "<article><p>Hello 😀 world. More text.</p></article>",
+    options=ExtractionOptions::new(max_excerpt_chars=7),
+  ) catch {
+    _ => abort("unexpected extraction error")
+  }
+  assert_eq(article.excerpt, "Hello 😀")
+}

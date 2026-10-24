@@ -218,6 +218,6 @@ pub fn extract_article(
     content_html,
     content_text,
     excerpt,
-    content_text.length(),
+    char_count(content_text),
   )
 }

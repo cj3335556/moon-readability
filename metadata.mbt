@@ -199,7 +199,7 @@ pub fn extract_article(
   for node in content_nodes {
     let cleaned = node.clean()
     html_parts.push(cleaned.to_html())
-    text_parts.push(cleaned.text())
+    text_parts.push(normalize_text(cleaned.content_text()))
   }
   let content_text = text_parts.join("\n")
   let content_html = html_parts.join("")
@@ -207,11 +207,7 @@ pub fn extract_article(
     Some(value) => value
     None => doc.title()
   }
-  let excerpt = if content_text.length() > opts.max_excerpt_chars {
-    content_text[:opts.max_excerpt_chars].to_owned()
-  } else {
-    content_text
-  }
+  let excerpt = make_excerpt(content_text, opts.max_excerpt_chars)
   Article::from_parts(
     title,
     metadata.byline,

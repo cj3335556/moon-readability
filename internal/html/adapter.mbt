@@ -95,6 +95,25 @@ pub fn Node::text(self : Node) -> String {
 }
 
 ///|
+/// Returns block-aware text with paragraph separators.
+pub fn Node::content_text(self : Node) -> String {
+  @html_parser.to_text(
+    self.inner,
+    separator="\n",
+    strip=true,
+    separator_blocks_only=true,
+  )
+}
+
+///|
+/// Renders the node as Markdown.
+pub fn Node::to_markdown(self : Node) -> String {
+  @html_parser.to_markdown(self.inner) catch {
+    _ => self.inner.text()
+  }
+}
+
+///|
 /// Serializes the node back to HTML.
 pub fn Node::to_html(self : Node) -> String {
   @html_parser.to_html(self.inner) catch {
